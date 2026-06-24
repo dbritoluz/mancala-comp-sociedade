@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mancala: O Jogo Ancestral</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-brown: #3d1f11;
+            --dark-brown-bg: #2b160c;
+            --terracotta: #a0522d;
+            --ocre: #d2a679;
+            --bege-creme: #fdf5e6;
+            --white-trans: rgba(255, 255, 255, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bege-creme);
+            color: var(--primary-brown);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Zilla Slab', serif;
+            font-weight: 700;
+        }
+
+        .african-pattern {
+            background-image: url('https://www.transparenttextures.com/patterns/az-subtle.png');
+            background-attachment: fixed;
+        }
+
+        /* Navbar transparente sobreposta ao banner */
+        nav {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 10%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        nav .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-family: 'Zilla Slab', serif;
+            letter-spacing: 2px;
+            cursor: pointer;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 2rem;
+        }
+
+        nav ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        nav ul li a:hover, nav ul li a.active-menu {
+            color: #ffffff;
+            border-bottom: 2px solid var(--ocre);
+            padding-bottom: 4px;
+        }
+
+        /* Banner de Topo configurado para .png */
+        .page-banner {
+            height: 45vh;
+            min-height: 300px;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('historia4.png') center/cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 10%;
+        }
+
+        .page-banner h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        /* Lógica de Exibição das Páginas */
+        .page-content {
+            display: none;
+            flex: 1;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        section {
+            padding: 60px 10%;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.3rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--terracotta);
+            margin: 15px auto;
+        }
+
+        /* Estrutura de Duas Colunas (Texto + Vídeo) na Home */
+        .home-split-row {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+            margin-bottom: 2rem;
+        }
+
+        .home-split-col {
+            flex: 1;
+        }
+
+        .home-split-col p {
+            font-size: 1.15rem;
+            text-align: justify;
+            margin-bottom: 1.5rem;
+        }
+
+        .home-video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .home-video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Seção de Botões na Home */
+        .home-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        .btn-action {
+            background-color: var(--terracotta);
+            color: white;
+            padding: 0.8rem 1.8rem;
+            font-size: 1.05rem;
+            font-family: 'Zilla Slab', serif;
+            font-weight: 700;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-action:hover {
+            background-color: transparent;
+            color: var(--terracotta);
+            border-color: var(--terracotta);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Seção Técnica Estilo Widget */
+        .tecnica-banner-section {
+            background-color: var(--dark-brown-bg);
+            color: white;
+            padding: 60px 10%;
+            text-align: center;
+        }
+
+        .tecnica-intro-text {
+            font-size: 1.3rem;
+            max-width: 900px;
+            margin: 0 auto 3.5rem;
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
+            color: #f5e6dc;
+        }
+
+        .widgets-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .widget-card {
+            background-color: white;
+            color: var(--primary-brown);
+            flex: 1;
+            min-width: 280px;
+            max-width: 360px;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            text-align: left;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 -4px 0px rgba(210, 166, 121, 0.4);
+            transition: var(--transition);
+        }
+
+        .widget-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .widget-icon {
+            font-size: 2.5rem;
+            color: var(--terracotta);
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .widget-card h4 {
+            font-family: 'Zilla Slab', serif;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        .widget-card p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #554035;
+        }
+
+        /* Estilos dos tópicos intercalados (Páginas Internas) */
+        .topico-bloco {
+            margin-bottom: 5rem;
+            display: inline-block;
+            width: 100%;
+        }
+        .topico-bloco h3 {
+            font-size: 1.7rem;
+            margin-bottom: 1.2rem;
+            color: var(--terracotta);
+        }
+        .topico-bloco p {
+            font-size: 1.15rem;
+            text-align: justify;
+            line-height: 1.7;
+        }
+        .img-bloco {
+            width: 340px;
+            height: 240px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border: 3px solid var(--ocre);
+        }
+        .img-direita {
+            float: right;
+            margin-left: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .img-esquerda {
+            float: left;
+            margin-right: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            background: #2a150c;
+            color: var(--bege-creme);
+            padding: 3rem 10% 2rem;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        @media (max-width: 968px) {
+            section { padding: 40px 5%; }
+            .home-split-row {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .img-bloco {
+                float: none !important;
+                display: block;
+                margin: 1.5rem auto !important;
+                width: 100%;
+                max-width: 400px;
+            }
+            .widgets-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .widget-card {
+                width: 100%;
+                max-width: 450px;
+            }
+        }
+    </style>
+</head>
+<body class="african-pattern">
+
+    <nav>
+        <div class="logo" onclick="navigateTo('inicio')">História da Computação na África</div>
+        <ul>
+            <li><a onclick="navigateTo('inicio')" id="nav-inicio" class="active-menu">Início</a></li>
+            <li><a onclick="navigateTo('historia')" id="nav-historia">História</a></li>
+            <li><a onclick="navigateTo('regras')" id="nav-regras">Regras</a></li>
+            <li><a onclick="navigateTo('tecnica')" id="nav-tecnica">Técnica</a></li>
+        </ul>
+    </nav>
+
+    <div id="page-inicio" class="page-content active">
+        <div class="page-banner">
+            <h1>Mancala: O Jogo Ancestral</h1>
+        </div>
+
+        <section id="sobre">
+            <h2 class="section-title">O que é Mancala?</h2>
+            <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <p style="font-size: 1.25rem; line-height: 1.8;">
+                    Diferente dos jogos de estratégia ocidentais, como o Xadrez que simulam conflitos bélicos, o Mancala fundamenta-se em uma <strong>lógica agrícola e distributiva</strong>. 
+                    Cada movimento é uma metáfora do plantio: as sementes são retiradas do celeiro e distribuídas nos campos, refletindo uma visão de mundo onde a redistribuição de recursos é central.
+                </p>
+            </div>
+        </section>
+
+        <section id="home-resumo-historia" style="background: rgba(210, 166, 121, 0.05); border-top: 1px solid rgba(0,0,0,0.03);">
+            <div class="home-split-row">
+                <div class="home-split-col">
+                    <h2 style="font-size: 2rem; color: var(--terracotta); margin-bottom: 1.5rem; font-family: 'Zilla Slab', serif;">A Gênese Ancestral</h2>
+                    <p>
+                        A família de jogos Mancala representa uma das manifestações intelectuais mais antigas e perenes da humanidade, com raíces profundas nas civilizações africanas. Funcionando como um sistema mecânico discreto baseado em semeadura, o jogo ultrapassa o lazer: era uma ferramenta de coesão social, tomada de decisões comunitárias e desenvolvimento aritmético.
+                    </p>
+                    <button class="btn-action" onclick="navigateTo('historia')">Conheça a História Completa</button>
+                </div>
+                <div class="home-split-col">
+                    <div class="home-video-container">
+                        <iframe src="https://www.youtube.com/embed/-3Aru3K5UxU?si=C2YVlkLrTwRNMUjz&amp;start=2" title="História do Mancala" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="home-resumo-regras">
+            <div class="home-split-row" style="flex-direction: row-reverse;">
+                <div class="home-split-col">
+                    <h2 style="font-size: 2rem; color: var(--terracotta); margin-bottom: 1.5rem; font-family: 'Zilla Slab', serif;">A Mecânica da Semeadura</h2>
+                    <p>
+                        Disputado em um tabuleiro de duas fileiras, o fluxo do jogo consiste em recolher sementes de uma cavidade e distribuí-las de maneira cíclica no sentido anti-horário. Através de capturas estratégicas baseadas na quantidade final de sementes nas cavidades adversárias, os jogadores buscam conquistar a maioria dos recursos para garantir o suprimento de seu próprio oásis.
+                    </p>
+                    <button class="btn-action" onclick="navigateTo('regras')">Conheça as Regras do Jogo</button>
+                </div>
+                <div class="home-split-col">
+                    <div class="home-video-container">
+                        <iframe src="https://www.youtube.com/embed/o9SztpPiing?si=UC_jw0YgBB41onT7" title="Regras do Mancala" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tecnica-banner-section">
+            <p class="tecnica-intro-text">
+                O Mancala é um laboratório para a Teoria dos Jogos e Aprendizado por Reforço, atuando como um dispositivo de estado discreto.
+            </p>
+            
+            <div class="widgets-container">
+                <div class="widget-card">
+                    <i class="fa-solid fa-sitemap widget-icon"></i>
+                    <h4>Minimax & Poda Alfa-Beta</h4>
+                    <p>Algoritmos que buscam a estratégia ótima cortando ramos irrelevantes da árvore de decisão.</p>
+                </div>
+                
+                <div class="widget-card">
+                    <i class="fa-solid fa-percent widget-icon"></i>
+                    <h4>Aritmética Modular</h4>
+                    <p>A distribuição em loop utiliza lógica de módulo, similar aos Buffers Circulares de SOs.</p>
+                </div>
+                
+                <div class="widget-card">
+                    <i class="fa-solid fa-brain widget-icon"></i>
+                    <h4>Heurística Avançada</h4>
+                    <p>As funções avaliam não só capturas, mas ameaças futuras e distribuição defensiva.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 3.5rem;">
+                <button class="btn-action" style="background-color: transparent; border-color: var(--ocre); color: var(--ocre);" onclick="navigateTo('tecnica')">Conheça a Técnica por Trás</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-historia" class="page-content">
+        <div class="page-banner">
+            <h1>História do Mancala</h1>
+        </div>
+
+        <section id="secao-historia-conteudo">
+            <div class="topico-bloco">
+                <img src="images/historia1.png" alt="Origens do Mancala" class="img-bloco img-direita">
+                <h3>1. Gênese Ancestral e Coesão Social</h3>
+                <p>
+                    A família de jogos Mancala representa uma das manifestações intelectuais mais perenes da humanidade, com raízes nas civilizações africanas e do Oriente Médio. O termo, derivado do árabe <em>naqala</em> (mover), abrange centenas de variantes com a mecânica de "semeadura". Evidências arqueológicas, como tabuleiros de calcário no Egito e na Etiópia (Séc. VI d.C.), sugerem que o jogo servia como ferramenta de coesão social e treinamento aritmético em sociedades sem registro escrito para cálculos complexos. Além do aspecto lúdico, ele funcionava como um ambiente de tomada de decisões comunitárias e transmissão de tradições orais, onde anciãos avaliavam a maturidade cognitiva dos jovens através da destreza matemática aplicada ao tabuleiro.
+                </p>
+            </div>
+
+            <div class="topico-bloco">
+                <img src="images/historia2.png" alt="Lógica Agrícola do Mancala" class="img-bloco img-esquerda">
+                <h3>2. Filosofia Agrícola vs. Lógica Bélica</h3>
+                <p>
+                    Diferente dos jogos ocidentais como o Xadrez, que simulam conflitos bélicos e hierarquias sociais rígidas de poder, o Mancala fundamenta-se em uma lógica inteiramente agrícola e distributiva. Cada movimento é uma metáfora pura do plantio: as sementes são retiradas do celeiro (cavidade) e distribuídas uma a uma nos campos. Essa dinâmica reflete uma visão de mundo onde a acumulação egoísta é penalizada e a redistribuição cíclica de recursos é o eixo central da sobrevivência. Historiadores da matemática apontam que a prática contínua do Mancala permitiu que comunidades tradicionais desenvolvessem uma intuição computacional profunda sobre sequências numéricas, paridade e modularidade muito antes da formalização das estruturas algébricas modernas europeias.
+                </p>
+            </div>
+
+            <div class="topico-bloco">
+                <img src="images/historia3.png" alt="Mancala e Computação" class="img-bloco img-direita">
+                <h3>3. O Primeiro Dispositivo de Estado Discreto</h3>
+                <p>
+                    Sob a perspectiva da Computação, o Mancala pode ser interpretado como um dos primeiros dispositivos de estado discreto e memória física estruturada da humanidade. O tabuleiro atua como um hardware rudimentar, onde as cavidades operam como endereços físicos de memória e as sementes representam os dados puros ali armazenados. A jogada segue um algoritmo determinístico estrito: o estado inicial do sistema é transformado sequencialmente por uma função de transição fixa (a semeadura). Desta forma, o jogo antecipa em milênios o próprio conceito de processamento lógico de informação, provando que sistemas de computação e otimização de recursos já eram manipulados fisicamente sem a necessidade de silício ou eletricidade.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-regras" class="page-content">
+        <div class="page-banner">
+            <h1>Regras do Jogo</h1>
+        </div>
+
+        <section id="secao-regras-conteudo">
+            <div class="topico-bloco">
+                <img src="images/regras1.png" alt="Dinâmica de Semeadura" class="img-bloco img-direita">
+                <h3>1. A Dinâmica da Semeadura e Fluxo do Jogo</h3>
+                <p>
+                    A partida de Mancala (na variante Oware) inicia-se com um tabuleiro composto por 12 cavidades organizadas em duas fileiras paralelas, onde cada jogador controla o seu respectivo lado. No início, colocam-se exatamente 4 sementes em cada casa. Em seu turno, o jogador recolhe todas as sementes de uma das cavidades de seu território e as distribuí, uma a uma, nas casas subsequentes seguindo rigidamente o sentido anti-horário. Caso a cavidade escolhida contenha 12 sementes ou mais, o movimento completará uma volta inteira no tabuleiro; nessa situação especial, a casa de origem da jogada deve ser pulada, permanecendo vazia ao final do ciclo de semeadura.
+                </p>
+            </div>
+
+            <div class="topico-bloco">
+                <img src="images/regras2.png" alt="Sistema de Captura" class="img-bloco img-esquerda">
+                <h3>2. Regras de Captura, Pontuação e Vitória</h3>
+                <p>
+                    A pontuação ocorre por meio do mecanismo de captura de recursos. Se a última semente distribuída por um jogador cair em uma cavidade do lado do adversário e fizer com que aquela casa passe a conter exatamente 2 ou 3 sementes, todas elas são capturadas e recolhidas para o seu depósito particular (o oásis ou grande celeiro). O processo de captura pode ser encadeado: caso a casa imediatamente anterior à última também contenha 2 ou 3 sementes após a distribuição, elas também são recolhidas. O jogo prossegue alternadamente até que um dos competidores consiga acumular um total de 25 sementes, garantindo matematicamente a vitória por deter mais da metade do estoque de dados do tabuleiro.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-tecnica" class="page-content">
+        <div class="page-banner">
+            <h1>Modelagem Técnico-Científica</h1>
+        </div>
+
+        <section id="secao-tecnica-conteudo">
+            <div class="topico-bloco">
+                <img src="images/tecnica1.png" alt="Árvores de Estados e Minimax" class="img-bloco img-direita">
+                <h3>1. Teoria dos Jogos, Árvores de Estados e Algoritmo Minimax</h3>
+                <p>
+                    O Mancala é um laboratório privilegiado para a Teoria dos Jogos, sendo classificado como um jogo de informação perfeita, soma zero e natureza determinística. Isso significa que, teoricamente, é possível prever o desfecho do jogo desde a primeira jogada, assumindo que ambos os jogadores sigam a estratégia ótima. Na computação, a modelagem do Mancala é frequentemente feita através de uma Árvore de Busca de Estados, onde cada nó representa uma configuração do tabuleiro e cada aresta uma jogada possível. A complexidade dessa árvore exige o uso do algoritmo Minimax, que busca maximizar o ganho do jogador enquanto minimiza as oportunidades do adversário. Para tornar a busca computacionalmente viável, aplica-se a Poda Alfa-Beta (Alpha-Beta Pruning). Este método "corta" ramos da árvore de decisão que não influenciarão o resultado final, permitindo que o algoritmo explore profundidades maiores em menos tempo. Em variantes complexas como o Oware, o espaço de estados atinge cerca de 10^14 combinações, o que torna a eficiência da função heurística um diferencial crítico. A função heurística deve avaliar não apenas o número de sementes capturadas, mas também a "ameaça" de capturas futures e a distribuição defensiva nas cavidades, transformando conceitos abstratos de estratégia em valores numéricos processáveis.
+                </p>
+            </div>
+
+            <div class="topico-bloco">
+                <img src="images/tecnica2.png" alt="Aritmética Modular" class="img-bloco img-esquerda">
+                <h3>2. Estrutura de Dados e Aritmética Modular</h3>
+                <p>
+                    Outro aspecto metodológico fascinante é a aplicação da Aritmética Modular na lógica de distribuição. Em programação, o tabuleiro é representado por um array circular. Quando uma jogada contém um número de sementes superior ao número de casas disponíveis, o algoritmo utiliza o operador de módulo (n mod 12 no caso do Oware) para determinar a position final. Esse comportamento de "loop" é análogo às estruturas de dados de Buffers Circulares em sistemas operacionais, onde o ponteiro de escrita retorna ao início após atingir o limite da memória, demonstrando uma aplicação prática de conceitos de baixo nível em um contexto de jogo.
+                </p>
+            </div>
+
+            <div class="topico-bloco">
+                <img src="images/tecnica3.png" alt="Aprendizado por Reforço" class="img-bloco img-direita">
+                <h3>3. Aprendizado por Reforço e IA Moderna</h3>
+                <p>
+                    Atualmente, o Mancala é utilizado para testar algoritmos de Aprendizado por Reforço (Reinforcement Learning). Agentes computacionais, como redes neurais convolucionais, são treinados para reconhecer padrões visuais no tabuleiro e associá-los a probabilidades de vitória. Ao contrário dos algoritmos de busca tradicionais, que calculam todas as possibilidades, esses agentes "aprendem" a intuição do jogo através de milhões de partidas simuladas. Esse cruzamento entre a matemática combinatória clássica e a inteligência artificial moderna mantém o Mancala no centro das pesquisas acadêmicas sobre eficiência algorítmica e heurística avançadas.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <hr style="border: 0; border-top: 1px solid var(--white-trans); margin-bottom: 2rem;">
+        <p>&copy; 2026 Projeto História da Computação - USP ICMC</p>
+    </footer>
+
+    <script>
+        function navigateTo(pageId) {
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => page.classList.remove('active'));
+
+            const menuLinks = document.querySelectorAll('nav ul li a');
+            menuLinks.forEach(link => link.classList.remove('active-menu'));
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            const targetNav = document.getElementById('nav-' + pageId);
+            if (targetNav) {
+                targetNav.classList.add('active-menu');
+            }
+
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
